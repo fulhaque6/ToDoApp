@@ -1,6 +1,7 @@
 import {userModel} from "../model/user.js";
 import bcrypt from "bcrypt";
 import {sendCookie} from "../utils/features.js";
+import ErrorHandler from "../middleware/error.js";
 
 export const getAllUsers = async (req, res) => {
 
@@ -19,11 +20,11 @@ export const loginUser = async (req, res) => {
     sendCookie(user,res,200,`Welcome Back ${user.name}`);
 }
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res,next) => {
     const {name, email, password} = req.body;
     let user = await userModel.findOne({email});
     if (user) {
-        return res.status(404).send("User already exists");
+        return next(new ErrorHandler('User Already Exist',404));
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     user = await userModel.create({
